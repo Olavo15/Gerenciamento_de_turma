@@ -1,8 +1,5 @@
-version: "3.7"
-
 services:
-    # image project
-    gerenciamentoTurma:
+    gerenciamentoturma:
         build:
             context: .
             dockerfile: Dockerfile
@@ -15,7 +12,6 @@ services:
         networks:
             - laravel
 
-    # nginx
     nginx:
         image: nginx:alpine
         restart: unless-stopped
@@ -27,7 +23,6 @@ services:
         networks:
             - laravel
 
-    # db mysql
     db:
         image: mysql:5.7.22
         restart: unless-stopped
@@ -43,7 +38,6 @@ services:
         networks:
             - laravel
 
-    # redis
     redis:
         image: redis:latest
         networks:
