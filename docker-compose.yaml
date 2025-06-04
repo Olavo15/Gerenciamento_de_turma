@@ -1,0 +1,110 @@
+services:
+  php:
+    build:
+      context: .
+      args:
+        APP_ENV: ${APP_ENV}
+      dockerfile: .docker/php-fpm/Dockerfile
+    restart: always
+    volumes:
+      - ./:/app
+    environment:
+      APP_KEY: ${APP_KEY}
+    networks:
+      - exemple-api
+    depends_on:
+      - postgres
+    command: >
+      sh -c "git config --global --add safe.directory /app && php-fpm"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: .docker/nginx/Dockerfile
+    restart: always
+    volumes:
+      - ./:/app
+    ports:
+      - ${NGINX_PORT_TWO}:${NGINX_PORT}
+    depends_on:
+      - php
+    networks:
+      - exemple-api
+
+  redis:
+    image: redis:alpine
+    restart: always
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
+    networks:
+      - exemple-api
+
+  postgres:
+    image: postgres:15
+    restart: always
+    volumes:
+      - .docker/postgres/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - ${DB_PORT_TWO}:${DB_PORT}
+    networks:
+      - exemple-api
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${FORWARD_PGADMIN_PORT:-8090}:80"
+    depends_on:
+      postgres:
+        condition: service_started
+    networks:
+      - exemple-api
+
+  npm:
+    image: node:current-alpine
+    container_name: npm
+    working_dir: /app
+    volumes:
+      - ./:/app
+    entrypoint: [ "tail", "-f", "/dev/null" ] # Mantém o container rodando
+    networks:
+      - exemple-api
+
+  mailhog:
+      image: mailhog/mailhog:latest
+      container_name: mailhog
+      ports:
+        - '${FORWARD_MAILHOG_PORT:-1025}:1025'
+        - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
+      networks:
+        - exemple-api
+
+  portainer:
+      container_name: portainer
+      image: portainer/portainer-ce:latest
+      restart: always
+      ports:
+        - ${PORTAINER_PORT}:${PORTAINER_PORT_TWO}
+      environment:
+        - TZ="${TIME_ZONE}"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - .docker/portainer:/data
+
+networks:
+  exemple-api:
+    driver: bridge
+
+volumes:
+  pgadmin:

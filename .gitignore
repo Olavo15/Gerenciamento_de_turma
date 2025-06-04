@@ -1,0 +1,36 @@
+# Ignorar dados do banco de dados
+.docker/postgres/data/
+.docker/portainer/
+.scribe/*
+
+# Ignorar arquivos e pastas de configuração temporários ou desnecessários
+*.log
+*.tmp
+*.bak
+
+app/.idea/
+/coverage-report
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+/resources/views/scribe/*
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
